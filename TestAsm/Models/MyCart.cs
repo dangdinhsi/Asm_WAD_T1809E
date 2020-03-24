@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
 
@@ -8,16 +9,21 @@ namespace TestAsm.Models
     public class MyCart
     {
         public Dictionary<int, CartItem> Items { get; set; }
-        private double TotalPrice = 0;
-        public double getTotalPrice()
-        {
-            this.TotalPrice = 0;
-            foreach (var item in Items.Values)
-            {
-                this.TotalPrice += item.Product.Price * item.Quantity;
-            }
-            return this.TotalPrice;
-        }
+
+        [DisplayFormat(DataFormatString = "{0:C}", ApplyFormatInEditMode = true)]
+        public double TotalPrice => Items.Values.Sum(x => x.Quantity*x.Product.Price);
+
+        //private double TotalPrice = 0;
+
+        //public double getTotalPrice()
+        //{
+        //    this.TotalPrice = 0;
+        //    foreach (var item in Items.Values)
+        //    {
+        //        this.TotalPrice += item.Product.Price * item.Quantity;
+        //    }
+        //    return this.TotalPrice;
+        //}
         public MyCart()
         {
             Items = new Dictionary<int, CartItem>();

@@ -2,82 +2,228 @@
 
 @{
     ViewBag.Title = "Index";
+    var thisCart = (TestAsm.Models.MyCart)Session["cart"];
 }
+    <div class="container">
 
-<h2>HomePage</h2>
-<a href="/ShoppingCart/Showcart">
-    <img src="https://lh3.googleusercontent.com/proxy/cMCtSOTZfpyOo3rzMSFeqHl3gz3htGvNv5j8V5Fy2ccJnrBMjOvDL6tNoZe3n9YuZpiKD6C4VzNZHLbTi72AiFWh4oltI4XAzT7erK-2QA" style="width:20px;" alt="Alternate Text" /><span>Check Cart</span>
-</a>
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">WebSiteName</a>
+                </div>
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="#">Home</a></li>
+                    <li><a href="#">Page 1</a></li>
+                    <li><a href="#">Page 2</a></li>
+                    <li>
+                        <a href="#" data-toggle="modal" data-target="#modalCart">
+                            <i class="fas fa-shopping-cart fa-fw text-danger"></i>
+                            <!-- Counter - Messages -->
+                            @if (thisCart == null)
+                            {
+                                <span class="badge badge-danger badge-counter text-danger">0</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-danger badge-counter text-danger">@thisCart.Items.Count.ToString()</span>
+                            }
 
-<table class="table">
-    <tr>
-        <td>
-            <form action="/Client/SearchName" method="get">
-                <input type="text" name="txtSearch" value="" />
-                <input type="submit" value="Search" />
-            </form>
-        </td>
-        <td>
-            @using (Html.BeginForm("SearchCategory", "Client", FormMethod.Get))
-            {
-                @Html.DropDownList("CategoryId", (IEnumerable<SelectListItem>)ViewBag.CategoryId, null, new { onchange = "this.form.submit();", @class = "form-control" })
-            }
-        </td>
-        <td>@Html.ActionLink("Hiển thị tất cả", "Index", "Client", new { @class = "btn btn-success" })</td>
-    </tr>
-</table>
+                        </a>
+                    </li>
+                    <li style="padding:7px;">
+                        <div class="form-inline">
+                            @using (Ajax.BeginForm("SearchByName", "Client", new AjaxOptions
+                            {
+                                InsertionMode = InsertionMode.Replace,
+                                HttpMethod = "GET",
+                                LoadingElementId = "Runloading",
+                                UpdateTargetId = "myContent"
+                            }))
+                            {
+                                <div class="form-group"><input type="text" style="max-width:100%;" class="form-control" name="txtSearch" value="@ViewBag.txtSearch" /></div>
+                                <div class="form-group"><input type="submit" class="btn btn-primary" value="Search" /></div>
 
+                            }
+                        </div>
+                    </li>
+                    <li style="padding:7px;display:none;" id="Runloading">
+                        <img src="https://faviconer.net/img/favicons/favicon-194x194.png" style="width:30px;" alt="Alternate Text" />
+                    </li>
+                    <li style="padding:7px;">
+                        @using (Html.BeginForm("SearchByCategory", "Client", FormMethod.Post))
+                        {
+                            @Html.DropDownList("CategoryId", (IEnumerable<SelectListItem>)ViewBag.CategoryId, "--Select Filter--", new { onchange = "this.form.submit();", @class = "mySeleclist form-control" })
+                        }
+                        
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        @*Model*@<div class="modal fade" id="modalCart" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <!--Header-->
+           <div class="modal-header">
+               <center>
+                   <strong class="modal-title" id="myModalLabel">Your cart</strong>
+               </center>
+                
+                @*<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>*@
+            </div>
+            <!--Body-->
+           <div class="modal-body">
+               @*nếu cập nhât lại giỏ với các item sô lượng =0, session lúc này ko null nhưng số lượng item trong list =0
+               nên cần xét thỏa mãn 1 trong 2 để tránh hiển thị ko mong muốn*@
+               @if (thisCart == null || thisCart.Items.Count == 0)
+               {
+                   <center><strong>Chưa có sản phẩm nào</strong></center>
+               }
+               else
+               {
+                   <table class="table table-hover">
+                       <thead>
+                           <tr>
+                               @*<th>#</th>*@
+                               <th>Hình Ảnh</th>
+                               <th>Tên Sản Phẩm</th>
+                               <th>Thành Tiền</th>
+                               <th></th>
+                           </tr>
+                       </thead>
+                       <tbody>
+                           @foreach (var item in thisCart.Items.Values)
+                           {
+                               <tr>
+                                   @*<th scope="row">@item.Product.Id</th>*@
+                                   <td><img src="@item.Product.Image" style="width:50px;" alt="Alternate Text" /></td>
+                                   <td>@item.Product.Name <span class="text-danger">*@item.Quantity</span></td>
+                                   <td>@(item.Quantity * item.Product.Price)</td>
+                                   <td>
+                                       @Html.ActionLink(" ", "Showcart", "ShoppingCart", null, new { @class = "fas fa-edit" })
+                                   </td>
+                               </tr>
+                           }
 
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayName("Category")
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Name)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Description)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Image)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Price)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Status)
-        </th>
-        <th></th>
-    </tr>
+                           <tr class="total">
+                               @*<th scope="row"></th>*@
+                               <td>Tổng tiền</td>
+                               <td></td>
+                               <td><strong>@thisCart.TotalPrice</strong></td>
+                               <td></td>
 
-    @foreach (var item in Model)
-    {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Category.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                <img src="@item.Image" style="width:50px;" alt="Alternate Text" />
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
-            </td>
-            <td>
-                @Html.ActionLink("Add Cart", "AddToCart", "ShoppingCart", new { productId = item.Id, quantity = 1 }, null) |
-                @Html.ActionLink("Details", "Details", new { id = item.Id })
-            </td>
-        </tr>
-    }
+                           </tr>
 
-</table>
+                       </tbody>
+                   </table>
+               }
+
+           </div>
+            <!--Footer-->
+            <div class="modal-footer">
+                @if(thisCart.Items.Count !=0){
+                    @Html.ActionLink("Checkout","ShowCart","ShoppingCart",null,new {@type="button",@class="btn btn-primary"  })
+                }
+            </div>
+        </div>
+    </div>
+</div>
+        @*EndModel*@
+        @* @using (Html.BeginForm("SearchByName", "Client", FormMethod.Get))
+        {
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <div class="col-md-6">
+                        <input class="form-control" style="max-width:100%" type="text" name="txtSearch" value="@ViewBag.txtSearch" />
+                    </div>
+                    <div class="col-md-4">
+                        <input type="submit" style="max-width:100%" value="Search" />
+                    </div>
+                    @*<div class="col-md-4">
+                        @Html.DropDownList("CategoryId", (IEnumerable<SelectListItem>)ViewBag.CategoryId, "Choose", new { onchange = "this.form.submit();", @class = "form-control" })
+                    </div>
+                </div>
+            </div>
+        }*@
+        <div class="row">
+            <div class="col-md-8">
+                
+            </div>
+            <div class="col-md-4">
+                
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayName("Category")
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.@*First().*@Name)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.@*First().*@Description)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.@*First().*@Image)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.@*First().*@Price)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.@*First().*@Status)
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="myContent">
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Category.Name)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Name)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Description)
+                                </td>
+                                <td>
+                                    <img src="@item.Image" style="width:50px;" alt="Alternate Text" />
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Price)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Status)
+                                </td>
+                                <td>
+                                    @Html.ActionLink("Add Cart", "AddToCart", "ShoppingCart", new { productId = item.Id, quantity = 1 }, null) |
+                                    @Html.ActionLink("Details", "Details", new { id = item.Id })
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(function() {
+
+  $('[data-toggle="modal"]').hover(function() {
+        $('#modalCart').modal('show');
+
+  });
+
+});
+    </script>
+    @*@Html.PagedListPager(Model,page=>Url.Action("Index","Client",new {page, txtSearch=Request.QueryString["txtSearch"]}))*@
 

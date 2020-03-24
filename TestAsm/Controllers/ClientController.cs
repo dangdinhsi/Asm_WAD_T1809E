@@ -8,6 +8,9 @@ using System.Web;
 using System.Web.Mvc;
 using TestAsm.Data;
 using TestAsm.Models;
+using PagedList.Mvc;
+using PagedList;
+using System.Diagnostics;
 
 namespace TestAsm.Controllers
 {
@@ -18,21 +21,48 @@ namespace TestAsm.Controllers
         // GET: Client
         public ActionResult Index()
         {
-            ViewBag.CategoryId = new SelectList(db.Categories, "Id", "Name");
-            var products = db.Products.Include(p => p.Category).Where(x=>x.Status ==Product.ProductStatus.Active);
+            // Khai báo thanh dropdown list ở index, nếu không khai báo,viewbag không có dữ liêu categoryid => lỗi.
+            IEnumerable<SelectListItem> selectLists = new SelectList(db.Categories, "Id", "Name");
+            ViewBag.CategoryId = selectLists;
+            var products = db.Products.Include(p => p.Category)/*.Where(x=>x.Status ==Product.ProductStatus.Active)*/;
             return View(products.ToList());
         }
-        public ActionResult SearchCategory(int CategoryId)
+        //public ActionResult SearchCategory(int CategoryId, int? page)
+        //{
+        //    ViewBag.CategoryId =new SelectList(db.Categories, "Id", "Name");
+        //    var products = db.Products.Include(p => p.Category).Where(x => x.CategoryId ==CategoryId);
+        //    return View("Index", products.ToList().ToPagedList(page ?? 1, 1));
+        //}
+        public ActionResult SearchByName(string txtSearch)
         {
-            ViewBag.CategoryId =new SelectList(db.Categories, "Id", "Name");
-            var products = db.Products.Include(p => p.Category).Where(x => x.CategoryId == CategoryId);
-            return View("Index", products.ToList());
+            ViewBag.txtSearch = txtSearch;
+            var products = db.Products.Include(p => p.Category);
+            //IEnumerable<SelectListItem> selectLists = new SelectList(db.Categories, "Id", "Name");
+            //ViewBag.CategoryId = selectLists;
+            if (!String.IsNullOrEmpty(txtSearch))
+            {
+                products = db.Products.Include(p => p.Category).Where(x => x.Name.Contains(txtSearch));
+            }
+            return PartialView("SearchByName", products.ToList()); // xử dụng 1 view partial với ajax helper.
         }
-        public ActionResult SearchName(string txtSearch)
+
+        [HttpPost]
+        public ActionResult SearchByCategory(int? CategoryId)  // để ? để nếu categoryid truyền lên nhận giá trị null sẽ ko xảy ra lỗi xung đột kiểu int.
         {
-            ViewBag.CategoryId = new SelectList(db.Categories, "Id", "Name");
-            var products = db.Products.Include(p => p.Category).Where(x => x.Name.Contains(txtSearch));
-            return View("Index",products.ToList());
+            if (CategoryId == null)
+            {
+                Debug.WriteLine("true");
+            }
+            
+            var products = db.Products.Include(p => p.Category);
+            IEnumerable<SelectListItem> selectLists = new SelectList(db.Categories, "Id", "Name");
+            ViewBag.CategoryId = selectLists;
+            if (CategoryId != null)
+            {
+                products = db.Products.Include(p => p.Category).Where(x => x.CategoryId == CategoryId);
+            }
+            return View("Index", products.ToList());
+
         }
         // GET: Client/Details/5
         public ActionResult Details(int? id)

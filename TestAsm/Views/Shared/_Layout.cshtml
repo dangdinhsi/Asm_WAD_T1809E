@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - My ASP.NET Application</title>
+    <link href="~/Content/fontawesome-free/css/all.min.css" rel="stylesheet" />
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
 </head>
@@ -30,9 +31,13 @@
     <div class="container body-content">
         @if (TempData["AlertMessage"] != null)
         {
-            <div id="alertBox" style="margin-top:30px" class="alert @TempData["AlertType"] hide">
-                @TempData["AlertMessage"]
-            </div>
+        <div id="alertBox" style="margin-top:30px" class="alert @TempData["AlertType"] hide">
+            @TempData["AlertMessage"]
+            <button type="button" class="close">
+               x
+            </button>
+        </div>
+           
         }
         @RenderBody()
         <hr />
@@ -40,12 +45,21 @@
             <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
         </footer>
     </div>
+    
+
     @Scripts.Render("~/bundles/jquery")
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js">
+    </script>
     @Scripts.Render("~/bundles/bootstrap")
+    @*<script src="~/Content/bootstrap.bundle.min.js"></script>*@
     <script>
-        ﻿$(function () {
-            $('#alertBox').removeClass('hide').slideUp(2000);
+        $(function () {
+            $('#alertBox').removeClass('hide').slideUp(3000);
+            //$('.mySeleclist').prepend(`<option value="0">--Hiển thị tất cả--</option>`);
         });
+        //$('.close').click(function () {
+        //    $('#alertBox').slideUp(100);
+        //});
     </script>
     @RenderSection("scripts", required: false)
 </body>
